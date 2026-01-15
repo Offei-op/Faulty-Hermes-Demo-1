@@ -6,4 +6,5 @@ A one day sprint to create a working version of our MVP to create a proof of con
 
 # How to setup project (In terminal)
 * Step 1: Create venv (python -m venv venv)
-* Step 2: pip install -r requirements.txt
+* Step 2: Activate environment (Scripts/venv/activate)
+* Step 3: pip install -r requirements.txt
