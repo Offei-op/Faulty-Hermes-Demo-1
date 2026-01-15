@@ -12,16 +12,16 @@
     <section class="friends-list">
         <h3>Your Friends</h3>
         {% if user.profile.friends.all %}
-            <ul>
-                {% for friend in user.profile.friends.all %}
-                    <li class="friend-item">
-                        <span>{{ friend.user.username }} (Learning: {{ friend.get_target_language_display }})</span>
-                        <a href="/chat/{{ friend.user.username }}/" class="btn-chat">Message</a>
-                    </li>
-                {% endfor %}
-            </ul>
+        <ul>
+            {% for friend in user.profile.friends.all %}
+            <li class="friend-item">
+                <span>{{ friend.user.username }} (Learning: {{ friend.get_target_language_display }})</span>
+                <a href="/chat/{{ friend.user.username }}/" class="btn-chat">Message</a>
+            </li>
+            {% endfor %}
+        </ul>
         {% else %}
-            <p>You haven't added any friends yet.</p>
+        <p>You haven't added any friends yet.</p>
         {% endif %}
     </section>
 
@@ -29,5 +29,29 @@
         <h3>Find People</h3>
         <p>Search for users to start practicing!</p>
     </section>
+    <section class="add-friends">
+    <h3>Add a Friend</h3>
+    <form action="{% url 'add_friend' %}" method="POST">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Enter username..." required>
+        <button type="submit" class="btn-secondary">Add Friend</button>
+    </form>
+    {% if messages %}
+        {% for message in messages %}
+            <p class="status-message">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+</section>
+
+    {% for friend in user.profile.friends.all %}
+    {% if friend.user.username %}
+    <li class="friend-item">
+        <span>{{ friend.user.username }}</span>
+        <a href="{% url 'room' friend.user.username %}" class="btn-chat">Message</a>
+    </li>
+    {% endif %}
+    {% endfor %}
+
+
 </div>
 {% endblock %}
