@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-card">
+    <h2>Create an Account</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <p>
+            <label for="target_language">Language you want to learn:</label>
+            <select name="target_language" id="target_language">
+                <option value="fr">French</option>
+                <option value="es">Spanish</option>
+                <option value="en">English</option>
+            </select>
+        </p>
+        
+        <button type="submit" class="btn-primary">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+</div>
+{% endblock %}

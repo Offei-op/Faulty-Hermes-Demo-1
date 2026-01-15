@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-container">
+    <section class="profile-info">
+        <h3>Your Profile</h3>
+        <p>Target Language: <strong>{{ user.profile.get_target_language_display }}</strong></p>
+    </section>
+
+    <hr>
+
+    <section class="friends-list">
+        <h3>Your Friends</h3>
+        {% if user.profile.friends.all %}
+            <ul>
+                {% for friend in user.profile.friends.all %}
+                    <li class="friend-item">
+                        <span>{{ friend.user.username }} (Learning: {{ friend.get_target_language_display }})</span>
+                        <a href="/chat/{{ friend.user.username }}/" class="btn-chat">Message</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You haven't added any friends yet.</p>
+        {% endif %}
+    </section>
+
+    <section class="add-friends">
+        <h3>Find People</h3>
+        <p>Search for users to start practicing!</p>
+    </section>
+</div>
+{% endblock %}
