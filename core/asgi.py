@@ -8,13 +8,14 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 """
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-from dotenv import load_dotenv
 import chat.routing
-
-load_dotenv()
 
 from django.core.asgi import get_asgi_application
 
