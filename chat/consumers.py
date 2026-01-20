@@ -8,7 +8,7 @@ from .models import Message, Profile
 from django.contrib.auth.models import User
 
 # Initialize Gemini Client
-client = genai.Client(api_key='AIzaSyCQuMNkuIRW4eqCcddd17sVX8kawasAUtU')
+client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
