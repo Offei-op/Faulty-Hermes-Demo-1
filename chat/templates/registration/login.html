@@ -2,12 +2,18 @@
 
 {% block content %}
 <div class="auth-card">
-    <h2>Login to LingoChat</h2>
+    <h2>Welcome back!</h2>
     <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div style="text-align: left;">
+            {{ form.as_p }}
+        </div>
         <button type="submit" class="btn-primary">Login</button>
     </form>
-    <p>Don't have an account? <a href="{% url 'register' %}">Sign up here</a></p>
+    <div style="margin-top: 25px; border-top: 2px solid var(--duo-gray-border); padding-top: 20px;">
+        <p style="color: var(--duo-text-muted); font-weight: 600;">New to FaultyHermes?</p>
+        <a href="{% url 'register' %}" class="btn-secondary"
+            style="width: 100%; box-sizing: border-box; text-align: center;">Create an account</a>
+    </div>
 </div>
 {% endblock %}

@@ -2,22 +2,32 @@
 
 {% block content %}
 <div class="auth-card">
-    <h2>Create an Account</h2>
+    <h2>Join FaultyHermes</h2>
+    <p style="color: var(--duo-text-muted); font-weight: 600; margin-bottom: 30px;">Start practicing with real people
+        today.</p>
+
     <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
-        
-        <p>
-            <label for="target_language">Language you want to learn:</label>
-            <select name="target_language" id="target_language">
-                <option value="fr">French</option>
-                <option value="es">Spanish</option>
-                <option value="en">English</option>
-            </select>
-        </p>
-        
-        <button type="submit" class="btn-primary">Sign Up</button>
+        <div style="text-align: left;">
+            {{ form.as_p }}
+
+            <p>
+                <label for="target_language">What language do you want to learn?</label>
+                <select name="target_language" id="target_language">
+                    <option value="fr">French</option>
+                    <option value="es">Spanish</option>
+                    <option value="en">English</option>
+                </select>
+            </p>
+        </div>
+
+        <button type="submit" class="btn-primary">Create Account</button>
     </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+
+    <div style="margin-top: 25px; border-top: 2px solid var(--duo-gray-border); padding-top: 20px;">
+        <p style="color: var(--duo-text-muted); font-weight: 600;">Already have an account?</p>
+        <a href="{% url 'login' %}" style="color: var(--duo-blue); font-weight: 800; text-decoration: none;">LOGIN
+            HERE</a>
+    </div>
 </div>
 {% endblock %}

@@ -1,45 +1,82 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div id="chat-container">
-    <div id="chat-log" class="messages-window">
-        {% for msg in chat_messages %}
-        <div class="message-bubble {% if msg.sender == user %}sent{% else %}received{% endif %}">
-            <div class="main-text">
-                {% if msg.sender == user %}{{ msg.original_text }}{% else %}{{ msg.translated_text }}{% endif %}
+<div style="height: calc(100vh - 120px); display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <a href="{% url 'dashboard' %}"
+            style="text-decoration: none; color: var(--duo-text-muted); font-size: 1.5rem; font-weight: 800;">✕</a>
+        <div
+            style="flex-grow: 1; height: 16px; background: var(--duo-gray-border); border-radius: 8px; position: relative; overflow: hidden;">
+            <div
+                style="position: absolute; left: 0; top: 0; height: 100%; width: 65%; background: var(--duo-green); border-radius: 8px; box-shadow: 0 4px 0 var(--duo-green-dark);">
             </div>
-            <div class="shadow-bubble">{{ msg.english_text }}</div>
         </div>
-        {% endfor %}
+        <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--duo-green);">
+            <span style="font-size: 1.2rem;">💎</span> 500
+        </div>
     </div>
-    <div class="input-area">
-        <input id="chat-message-input" type="text" placeholder="Type in your target language...">
-        <button id="chat-message-submit">Send</button>
+
+    <div id="chat-container">
+        <div id="chat-log" class="messages-window">
+            {% for msg in chat_messages %}
+            <div class="message-bubble {% if msg.sender == user %}sent{% else %}received{% endif %}">
+                <div class="main-text">
+                    {% if msg.sender == user %}{{ msg.original_text }}{% else %}{{ msg.translated_text }}{% endif %}
+                </div>
+                <div class="shadow-bubble">{{ msg.english_text }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="input-area">
+            <input id="chat-message-input" type="text" placeholder="Type your message here..." autocomplete="off">
+            <button id="chat-message-submit" class="btn-primary">Send</button>
+        </div>
     </div>
 </div>
 
 <script>
     const friendName = "{{ friend_username }}";
     const chatSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/chat/' + friendName + '/'
+        (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
+        window.location.host + '/ws/chat/' + friendName + '/'
     );
+
+    const chatLog = document.querySelector('#chat-log');
+
+    // Auto-scroll to bottom on load
+    chatLog.scrollTop = chatLog.scrollHeight;
+
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const messageElement = document.createElement('div');
         const isMe = data.sender === '{{ user.username }}';
         messageElement.className = 'message-bubble ' + (isMe ? 'sent' : 'received');
 
-        // Logic: if me, show original message. If friend, show translated.
         const displayText = isMe ? data.message : data.translated;
+        const shadowText = data.english || '';
 
-        // Primary text bubble
         messageElement.innerHTML = `
             <div class="main-text">${displayText}</div>
-            <div class="shadow-bubble">${data.english || ''}</div>
+            <div class="shadow-bubble">${shadowText}</div>
         `;
 
-        const chatLog = document.querySelector('#chat-log');
         chatLog.appendChild(messageElement);
-        chatLog.scrollTop = chatLog.scrollHeight;
+
+        // Custom animation for new messages
+        messageElement.style.opacity = '0';
+        messageElement.style.transform = 'translateY(10px)';
+        messageElement.style.transition = 'all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+
+        setTimeout(() => {
+            messageElement.style.opacity = '1';
+            messageElement.style.transform = 'translateY(0)';
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }, 10);
+    };
+
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
     };
 
     document.querySelector('#chat-message-submit').onclick = function (e) {
@@ -56,52 +93,69 @@
             document.querySelector('#chat-message-submit').click();
         }
     };
+
+    // Focus input on load
+    document.querySelector('#chat-message-input').focus();
 </script>
+
 <style>
-    .messages-window {
-        height: 400px;
-        overflow-y: scroll;
-        border: 1px solid #ddd;
-        padding: 20px;
-    }
-
-    .message-bubble {
-        margin-bottom: 15px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .sent {
-        align-items: flex-end;
-    }
-
-    .received {
-        align-items: flex-start;
-    }
-
+    /* Add some specific overrides for the chat room */
     .sent .main-text {
-        background: #007bff;
-        /* Blue for Me */
-        color: white;
+        background-color: white;
+        color: var(--duo-text);
+        border: 2px solid var(--duo-gray-border);
+        border-bottom-width: 4px;
     }
 
     .received .main-text {
-        background: #28a745;
-        /* Green for Friend */
+        background-color: var(--duo-green);
         color: white;
+        border: 2px solid var(--duo-green-dark);
+        border-bottom-width: 4px;
     }
 
-    .main-text {
-        padding: 10px;
-        border-radius: 15px;
-        max-width: 80%;
+    .main-text::after {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: inherit;
+        border: inherit;
+        border-top: none;
+        border-right: none;
     }
 
-    .shadow-bubble {
-        font-size: 0.8em;
-        color: #666;
-        margin-top: 4px;
-        font-style: italic;
+    .sent .main-text::after {
+        right: -8px;
+        top: 12px;
+        transform: rotate(225deg);
+        border-bottom-width: 2px;
+        border-left-width: 2px;
+    }
+
+    .received .main-text::after {
+        left: -8px;
+        top: 12px;
+        transform: rotate(45deg);
+        border-bottom-width: 2px;
+        border-left-width: 2px;
+    }
+
+    /* Message bounce animation */
+    @keyframes bounceIn {
+        from {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .message-bubble {
+        animation: bounceIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
     }
 </style>
 {% endblock %}

@@ -2,56 +2,96 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <section class="profile-info">
-        <h3>Your Profile</h3>
-        <p>Target Language: <strong>{{ user.profile.get_target_language_display }}</strong></p>
-    </section>
+    <header style="margin-bottom: 20px;">
+        <h2 style="font-weight: 800; font-size: 2rem; margin-bottom: 8px;">Welcome back, {{ user.username }}!</h2>
+        <p style="color: var(--duo-text-muted); font-weight: 600;">Pick up where you left off or find a new partner.</p>
+    </header>
 
-    <hr>
+    <div style="display: grid; grid-template-columns: 1fr 300px; gap: 30px;">
+        <div class="left-col">
+            <section class="friends-list" style="margin-bottom: 30px;">
+                <h3>Your Learning Partners</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    {% if user.profile.friends.all %}
+                    {% for friend in user.profile.friends.all %}
+                    <div class="friend-item"
+                        style="border: 2px solid var(--duo-gray-border); border-radius: var(--duo-radius); padding: 20px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div
+                                style="width: 50px; height: 50px; background: var(--duo-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.2rem;">
+                                {{ friend.user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 800; font-size: 1.1rem;">{{ friend.user.username }}</div>
+                                <div style="color: var(--duo-text-muted); font-size: 0.9rem;">Practicing {{
+                                    friend.get_target_language_display }}</div>
+                            </div>
+                        </div>
+                        <a href="{% url 'room' friend.user.username %}" class="btn-secondary">Chat</a>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div
+                        style="text-align: center; padding: 40px; border: 2px dashed var(--duo-gray-border); border-radius: var(--duo-radius);">
+                        <p style="color: var(--duo-text-muted); font-weight: 600;">You haven't added any friends yet.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
 
-    <section class="friends-list">
-        <h3>Your Friends</h3>
-        {% if user.profile.friends.all %}
-        <ul>
-            {% for friend in user.profile.friends.all %}
-            <li class="friend-item">
-                <span>{{ friend.user.username }} (Learning: {{ friend.get_target_language_display }})</span>
-                <a href="/chat/{{ friend.user.username }}/" class="btn-chat">Message</a>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>You haven't added any friends yet.</p>
-        {% endif %}
-    </section>
+            <section class="add-friends">
+                <h3>Find a New Partner</h3>
+                <form action="{% url 'add_friend' %}" method="POST" style="display: flex; gap: 12px;">
+                    {% csrf_token %}
+                    <input type="text" name="username" placeholder="Search by username..." required>
+                    <button type="submit" class="btn-primary" style="white-space: nowrap;">Add Friend</button>
+                </form>
+                {% if messages %}
+                <div style="margin-top: 15px;">
+                    {% for message in messages %}
+                    <p style="color: var(--duo-blue-dark); font-weight: 700; font-size: 0.9rem;">{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </section>
+        </div>
 
-    <section class="add-friends">
-        <h3>Find People</h3>
-        <p>Search for users to start practicing!</p>
-    </section>
-    <section class="add-friends">
-    <h3>Add a Friend</h3>
-    <form action="{% url 'add_friend' %}" method="POST">
-        {% csrf_token %}
-        <input type="text" name="username" placeholder="Enter username..." required>
-        <button type="submit" class="btn-secondary">Add Friend</button>
-    </form>
-    {% if messages %}
-        {% for message in messages %}
-            <p class="status-message">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
-</section>
+        <div class="right-col">
+            <section class="profile-card" style="text-align: center;">
+                <div
+                    style="width: 80px; height: 80px; background: var(--duo-green); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 2rem; border: 4px solid var(--duo-green-dark);">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <h3 style="margin-bottom: 5px;">{{ user.username }}</h3>
+                <p style="color: var(--duo-text-muted); font-weight: 600; font-size: 0.9rem; margin-bottom: 20px;">
+                    Target: {{ user.profile.get_target_language_display }}
+                </p>
+                <div
+                    style="background: var(--duo-gray-light); padding: 15px; border-radius: var(--duo-radius); border: 2px solid var(--duo-gray-border);">
+                    <div style="font-weight: 800; color: var(--duo-green-dark);">STREAK</div>
+                    <div style="font-size: 1.5rem; font-weight: 800;">🔥 0 Days</div>
+                </div>
+            </section>
 
-    {% for friend in user.profile.friends.all %}
-    {% if friend.user.username %}
-    <li class="friend-item">
-        <span>{{ friend.user.username }}</span>
-        <a href="{% url 'room' friend.user.username %}" class="btn-chat">Message</a>
-    </li>
-    {% endif %}
-    {% endfor %}
-
-
+            <section class="achievements-card" style="margin-top: 20px;">
+                <h3 style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5rem;">🏆</span> Achievements
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.2rem; opacity: 0.3;">⭐</span>
+                        <div style="flex-grow: 1;">
+                            <div style="font-weight: 700; font-size: 0.9rem;">First Conversation</div>
+                            <div
+                                style="width: 100%; height: 8px; background: var(--duo-gray-border); border-radius: 4px; margin-top: 4px;">
+                                <div style="width: 0%; height: 100%; background: #FFD700; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
 </div>
 {% endblock %}
