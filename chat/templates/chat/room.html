@@ -25,23 +25,36 @@
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const messageElement = document.createElement('div');
-        messageElement.className = 'message-bubble ' + (data.sender === '{{ user.username }}' ? 'sent' : 'received');
+        const isMe = data.sender === '{{ user.username }}';
+        messageElement.className = 'message-bubble ' + (isMe ? 'sent' : 'received');
+
+        // Logic: if me, show original message. If friend, show translated.
+        const displayText = isMe ? data.message : data.translated;
 
         // Primary text bubble
         messageElement.innerHTML = `
-            <div class="main-text">${data.message}</div>
-            <div class="shadow-bubble">${data.translation || 'Translating...'}</div>
+            <div class="main-text">${displayText}</div>
+            <div class="shadow-bubble">${data.english || ''}</div>
         `;
 
-        document.querySelector('#chat-log').appendChild(messageElement);
+        const chatLog = document.querySelector('#chat-log');
+        chatLog.appendChild(messageElement);
+        chatLog.scrollTop = chatLog.scrollHeight;
     };
 
     document.querySelector('#chat-message-submit').onclick = function (e) {
-        console.log("Sent")
         const messageInputDom = document.querySelector('#chat-message-input');
         const message = messageInputDom.value;
-        chatSocket.send(JSON.stringify({ 'message': message }));
-        messageInputDom.value = '';
+        if (message.trim() !== "") {
+            chatSocket.send(JSON.stringify({ 'message': message }));
+            messageInputDom.value = '';
+        }
+    };
+
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
     };
 </script>
 <style>
@@ -66,11 +79,22 @@
         align-items: flex-start;
     }
 
-    .main-text {
+    .sent .main-text {
         background: #007bff;
+        /* Blue for Me */
         color: white;
+    }
+
+    .received .main-text {
+        background: #28a745;
+        /* Green for Friend */
+        color: white;
+    }
+
+    .main-text {
         padding: 10px;
         border-radius: 15px;
+        max-width: 80%;
     }
 
     .shadow-bubble {

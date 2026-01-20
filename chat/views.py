@@ -19,9 +19,11 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Create profile and set target language from the form
+            # Profile is automatically created by signals in models.py
+            # Just update the target language if provided
             lang = request.POST.get('target_language', 'en')
-            Profile.objects.create(user=user, target_language=lang)
+            user.profile.target_language = lang
+            user.profile.save()
             return redirect('login')
     else:
         form = UserCreationForm()
@@ -34,11 +36,17 @@ def register(request):
 
 @login_required
 def dashboard(request):
+    # Ensure profile exists (resilience)
+    Profile.objects.get_or_create(user=request.user)
     return render(request, 'chat/dashboard.html')
 
 @login_required
 def room(request, username):
-    friend = User.objects.get(username=username)
+    # Ensure own profile exists
+    Profile.objects.get_or_create(user=request.user)
+    friend = get_object_or_404(User, username=username)
+    # Ensure friend has profile
+    Profile.objects.get_or_create(user=friend)
     # Fetch messages between David and Jack
     messages = Message.objects.filter(
         (Q(sender=request.user) & Q(receiver=friend)) |
@@ -57,7 +65,7 @@ def add_friend(request):
         username = request.POST.get('username')
         try:
             friend_user = User.objects.get(username=username)
-            friend_profile = friend_user.profile
+            friend_profile, created = Profile.objects.get_or_create(user=friend_user)
             
             # Prevent adding yourself
             if friend_user == request.user:
