@@ -23,10 +23,12 @@ pip install google-genai channels daphne
 ```
 
 ### 3. API Key Configuration
-The AI translation requires a Gemini API Key. Currently, the key is hardcoded in `chat/consumers.py` for demonstration, but for production, you should use:
-```python
-client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
-```
+The AI translation requires a Gemini API Key. 
+1. Create a `.env` file in the root directory (based on `.env.template`).
+2. Add your key: `GEMINI_API_KEY=your_actual_key_here`.
+3. The server uses `os.environ.get('GEMINI_API_KEY')` to load it.
+
+**NEVER** hardcode or commit keys to the repository.
 
 ### 4. Database Setup
 ```bash
